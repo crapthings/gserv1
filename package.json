@@ -1,0 +1,34 @@
+{
+  "name": "express-starter",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "crapthings",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --exit",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.10",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "form-data": "^4.0.0",
+    "lodash": "^4.17.21",
+    "multer": "^1.4.4",
+    "nanoid": "^3.3.6",
+    "pino-http": "^8.5.0",
+    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "chai": "^4.3.8",
+    "mocha": "^10.2.0",
+    "nodemon": "^3.0.1",
+    "standard": "^17.1.0"
+  }
+}
