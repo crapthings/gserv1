@@ -37,33 +37,33 @@ module.exports = function ({ router, ...deps }) {
   })
 
   router.get('/top', async function (req, res) {
-    const selector = {
-      attributes: [
-        'region',
-        [sequelize.fn('COUNT', sequelize.col('uid')), 'userCount'],
-        [sequelize.fn('SUM', sequelize.col('score')), 'totalScore']
-      ],
-      group: ['region'],
-      order: [[sequelize.literal('totalScore'), 'DESC']]
-    }
+    // const selector = {
+    //   attributes: [
+    //     'region',
+    //     [sequelize.fn('COUNT', sequelize.col('uid')), 'userCount'],
+    //     [sequelize.fn('SUM', sequelize.col('score')), 'totalScore']
+    //   ],
+    //   group: ['region'],
+    //   order: [[sequelize.literal('totalScore'), 'DESC']]
+    // }
 
-    const users = await Users.findAll(selector)
+    // const users = await Users.findAll(selector)
 
     const result = await sequelize.query(`
       WITH ranked_users AS (
         SELECT
-            region,
-            nickname,
-            icon,
-            score,
-            ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
+          region,
+          nickname,
+          icon,
+          score,
+          ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
         FROM users
       ),
       region_stats AS (
         SELECT
-            region,
-            COUNT(*) as userCount,
-            SUM(score) as totalScore
+          region,
+          COUNT(*) as userCount,
+          SUM(score) as totalScore
         FROM users
         GROUP BY region
       )
@@ -72,11 +72,11 @@ module.exports = function ({ router, ...deps }) {
         rs.userCount,
         rs.totalScore,
         JSON_GROUP_ARRAY(
-            JSON_OBJECT(
-                'nickname', ru.nickname,
-                'icon', ru.icon,
-                'score', ru.score
-            )
+          JSON_OBJECT(
+            'nickname', ru.nickname,
+            'icon', ru.icon,
+            'score', ru.score
+          )
         ) as users
       FROM region_stats rs
       LEFT JOIN ranked_users ru ON rs.region = ru.region AND ru.rank <= 20
