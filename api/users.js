@@ -1,3 +1,4 @@
+const { Sequelize, DataTypes } = require('sequelize')
 const { sequelize, Users } = require('../db/users')
 
 module.exports = function ({ router, ...deps }) {
@@ -43,12 +44,56 @@ module.exports = function ({ router, ...deps }) {
         [sequelize.fn('SUM', sequelize.col('score')), 'totalScore']
       ],
       group: ['region'],
-      order: [[sequelize.literal('totalScore'), 'DESC']]
+      order: [[sequelize.literal('totalScore'), 'DESC']],
     }
 
     const users = await Users.findAll(selector)
 
-    res.json(users)
+    const result = await sequelize.query(`
+        WITH ranked_users AS (
+            SELECT
+                region,
+                nickname,
+                icon,
+                score,
+                ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
+            FROM users
+        ),
+        region_stats AS (
+            SELECT
+                region,
+                COUNT(*) as userCount,
+                SUM(score) as totalScore
+            FROM users
+            GROUP BY region
+        )
+        SELECT
+            rs.region,
+            rs.userCount,
+            rs.totalScore,
+            JSON_GROUP_ARRAY(
+                JSON_OBJECT(
+                    'nickname', ru.nickname,
+                    'icon', ru.icon,
+                    'score', ru.score
+                )
+            ) as users
+        FROM region_stats rs
+        LEFT JOIN ranked_users ru ON rs.region = ru.region AND ru.rank <= 20
+        GROUP BY rs.region
+        ORDER BY rs.totalScore DESC
+    `, {
+        type: Sequelize.QueryTypes.SELECT
+    })
+
+    const formattedResult = result.map(row => ({
+            ...row,
+            users: JSON.parse(row.users)
+        }));
+
+    console.log(formattedResult)
+
+    res.json(formattedResult)
   })
 
   return router
