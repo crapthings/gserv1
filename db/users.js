@@ -15,6 +15,10 @@ const User = sequelize.define('user', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  icon: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   region: {
     type: DataTypes.STRING,
     allowNull: false

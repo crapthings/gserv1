@@ -1,4 +1,4 @@
-const { Users } = require('../db/users')
+const { sequelize, Users } = require('../db/users')
 
 module.exports = function ({ router, ...deps }) {
   router.get('/users', async function (req, res) {
@@ -11,6 +11,8 @@ module.exports = function ({ router, ...deps }) {
     }
 
     selector.attributes = { exclude: ['uid'] }
+    selector.order = [['score', 'DESC']]
+    selector.limit = 20
 
     const users = await Users.findAll(selector)
 
@@ -18,9 +20,9 @@ module.exports = function ({ router, ...deps }) {
   })
 
   router.post('/users', async function (req, res) {
-    const { uid, nickname, region, score } = req.body
+    const { uid, nickname, region, score, icon } = req.body
 
-    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score } })
+    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon } })
 
     res.json(result)
   })
@@ -31,6 +33,22 @@ module.exports = function ({ router, ...deps }) {
     await Users.update({ score }, { where: { uid } })
 
     res.json({ status: 200 })
+  })
+
+  router.get('/top', async function (req, res) {
+    const selector = {
+      attributes: [
+        'region',
+        [sequelize.fn('COUNT', sequelize.col('uid')), 'userCount'],
+        [sequelize.fn('SUM', sequelize.col('score')), 'totalScore']
+      ],
+      group: ['region'],
+      order: [[sequelize.literal('totalScore'), 'DESC']]
+    }
+
+    const users = await Users.findAll(selector)
+
+    res.json(users)
   })
 
   return router
