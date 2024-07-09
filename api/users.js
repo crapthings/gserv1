@@ -37,27 +37,19 @@ module.exports = function ({ router, ...deps }) {
   })
 
   router.get('/top', async function (req, res) {
-    // const selector = {
-    //   attributes: [
-    //     'region',
-    //     [sequelize.fn('COUNT', sequelize.col('uid')), 'userCount'],
-    //     [sequelize.fn('SUM', sequelize.col('score')), 'totalScore']
-    //   ],
-    //   group: ['region'],
-    //   order: [[sequelize.literal('totalScore'), 'DESC']]
-    // }
-
-    // const users = await Users.findAll(selector)
-
     const result = await sequelize.query(`
-      WITH ranked_users AS (
-        SELECT
-          region,
-          nickname,
-          icon,
-          score,
-          ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
-        FROM users
+      WITH top_users AS (
+        SELECT *
+        FROM (
+          SELECT
+            region,
+            nickname,
+            icon,
+            score,
+            ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
+          FROM users
+        ) ranked
+        WHERE rank <= 20
       ),
       region_stats AS (
         SELECT
@@ -73,13 +65,13 @@ module.exports = function ({ router, ...deps }) {
         rs.totalScore,
         JSON_GROUP_ARRAY(
           JSON_OBJECT(
-            'nickname', ru.nickname,
-            'icon', ru.icon,
-            'score', ru.score
+            'nickname', tu.nickname,
+            'icon', tu.icon,
+            'score', tu.score
           )
         ) as users
       FROM region_stats rs
-      LEFT JOIN ranked_users ru ON rs.region = ru.region AND ru.rank <= 20
+      LEFT JOIN top_users tu ON rs.region = tu.region
       GROUP BY rs.region
       ORDER BY rs.totalScore DESC
     `, {
