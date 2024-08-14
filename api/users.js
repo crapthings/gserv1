@@ -58,7 +58,10 @@ module.exports = function ({ router, ...deps }) {
       console.log(_icon)
     }
 
-    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon: _icon, skinid } })
+    const [result, created] = await Users.upsert(
+      { uid, nickname, region, score, icon: _icon, skinid },
+      { returning: true }
+    )
 
     res.json(result)
   })
