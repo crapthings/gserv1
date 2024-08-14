@@ -1,3 +1,6 @@
+const path = require('path')
+const fs = require('fs-extra')
+const axios = require('axios')
 const { Sequelize, DataTypes } = require('sequelize')
 const { sequelize, Users } = require('../db/users')
 
@@ -32,7 +35,30 @@ module.exports = function ({ router, ...deps }) {
   router.post('/users', async function (req, res) {
     const { uid, nickname, region, score, icon, skinid } = req.body
 
-    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon, skinid } })
+    let _icon
+
+    if (icon) {
+      const response = await axios({
+        url: icon,
+        method: 'GET',
+        responseType: 'arraybuffer'
+      })
+
+      const buffer = Buffer.from(response.data, 'binary')
+      const filename = `${uid}_${Date.now()}.jpg`
+      const staticDir = path.join(process.cwd(), 'uploads', 'images')
+      const filePath = path.join(staticDir, filename)
+
+      await fs.ensureDir(staticDir)
+
+      await fs.writeFile(filePath, buffer)
+
+      _icon = filename
+
+      console.log(_icon)
+    }
+
+    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon: _icon, skinid } })
 
     res.json(result)
   })

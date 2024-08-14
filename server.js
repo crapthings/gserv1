@@ -24,6 +24,7 @@ server.use(cors())
 server.use(bodyParser.urlencoded({ extended: false }))
 server.use(bodyParser.json())
 server.use(pino)
+server.use(express.static('uploads'))
 
 server.use(function (err, req, res, next) {
   next()
