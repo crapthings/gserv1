@@ -30,9 +30,9 @@ module.exports = function ({ router, ...deps }) {
   })
 
   router.post('/users', async function (req, res) {
-    const { uid, nickname, region, score, icon } = req.body
+    const { uid, nickname, region, score, icon, skinid } = req.body
 
-    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon } })
+    const result = await Users.findOrCreate({ where: { uid }, defaults: { uid, nickname, region, score, icon, skinid } })
 
     res.json(result)
   })
@@ -54,6 +54,7 @@ module.exports = function ({ router, ...deps }) {
             region,
             nickname,
             icon,
+            skinid,
             score,
             ROW_NUMBER() OVER (PARTITION BY region ORDER BY score DESC) as rank
           FROM users
@@ -76,6 +77,7 @@ module.exports = function ({ router, ...deps }) {
           JSON_OBJECT(
             'nickname', tu.nickname,
             'icon', tu.icon,
+            'skinid', tu.skinid,
             'score', tu.score
           )
         ) as users
