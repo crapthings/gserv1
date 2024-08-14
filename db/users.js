@@ -13,7 +13,7 @@ const User = sequelize.define('user', {
   },
   nickname: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   icon: {
     type: DataTypes.STRING,
@@ -25,7 +25,7 @@ const User = sequelize.define('user', {
   },
   region: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   score: {
     type: DataTypes.INTEGER,
