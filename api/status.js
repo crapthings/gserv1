@@ -3,5 +3,9 @@ module.exports = function ({ router, ...deps }) {
     res.sendStatus(200)
   })
 
+  router.get('/nihao', function (req, res) {
+    res.json({ test: 'nihao' })
+  })
+
   return router
 }
